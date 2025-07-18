@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSEC Pre-order</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('https://theguidon.com/1112/main/wp-content/uploads/2018/11/080118-JSEC-Employee-Security-Perfecto-14-1400x933.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .top-right-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+        }
+
+        .top-right-container a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .top-right-container a:hover {
+            transform: translateY(-3px);
+        }
+
+        .welcome-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 30px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>    
+    <div class="welcome-text">
+        Welcome to the JSEC Pre-order App{% if user.is_authenticated %}, {{ user.first_name|default:user.username }}!{% endif %}
+    </div>
+
+    <div class="top-right-container">
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+    <main>
+        <div style="backdrop-filter: blur(4px); background-color: rgba(255,255,255,0); min-height: 100vh;">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</body>
+</html>

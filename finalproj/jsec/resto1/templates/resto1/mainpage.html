@@ -1,0 +1,199 @@
+{% load custom_filters %}
+<html>
+<head>
+    <title>{{ restaurant.name }}</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f8;
+        }
+
+        .header {
+            background-image: url('https://scontent.fmnl2-2.fna.fbcdn.net/v/t1.15752-9/517592526_4214405522138177_58520541027650315_n.png?_nc_cat=106&ccb=1-7&_nc_sid=9f807c&_nc_eui2=AeEYnaAtslYbjbpGVXg_1RDwT7FeeTqDkA9PsV55OoOQD32MJyc3uPf7PpVB7AtCLkvKwuSexWSnJ1gE4fcAwFEn&_nc_ohc=qhKG6XZbKvoQ7kNvwGpRJuz&_nc_oc=AdmUjYfnnHgM0vJugZXoSxZ08uVDtrZaBddZY7PdfSYU5CJUxvpjIVUcQ1kyt5Bc1Vw&_nc_zt=23&_nc_ht=scontent.fmnl2-2.fna&oh=03_Q7cD2wERhxTSHtnb1qLG4JTw_Tk7pBx1aPCDB_YZqOl3tNLPog&oe=68A1D8DF'); 
+            background-size: cover;
+            background-position: center;
+            height: 250px;
+            position: relative;
+        }
+
+        .top-right-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .top-right-container a,
+        .top-right-container button {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            font-size: 1rem;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .top-right-container a:hover,
+        .top-right-container button:hover {
+            transform: translateY(-3px);
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+        }
+
+        td img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            height: 40px;
+            padding: 5px;
+            font-size: 1.4rem;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .remaining-note {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .submit-button {
+            font-family: 'Inter', sans-serif;
+            padding: 10px 25px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .submit-button:hover {
+            background-color: #FFB347;
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="top-right-container">
+            <a href="{% url 'home' %}">Return to Home</a>
+            <a href="{% url 'history' %}">Transaction History</a>
+
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>{{ restaurant.name }}</h1>
+        <p style="text-align: center;">{{ restaurant.website }}</p>
+        
+        <!-- pickup date -->
+        <form method="get" id="pickup-form" style="text-align: center; margin-bottom: 10px;">
+            <label for="pickup_date"><strong>Select Pickup Date:</strong></label>
+            <input type="date"
+                name="pickup_date"
+                id="pickup_date"
+                value="{{ pickup_date|date:'Y-m-d' }}"
+                min="{{ today|date:'Y-m-d' }}"
+                max="{{ today|add:max_days|date:'Y-m-d' }}"
+                onchange="document.getElementById('pickup-form').submit();">
+        </form>
+
+        <p style="text-align: center; margin-bottom: 20px; font-style: italic;">
+            You may place a preorder up to <strong>{{ max_days }}</strong> day{{ max_days|pluralize }} in advance.
+        </p>
+
+        <h2> Sip 'n' Scoop Menu</h2> <!-- change name when needed-->
+        <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="pickup_date" value="{{ pickup_date|date:'Y-m-d' }}">
+
+            <table>
+                <tr>
+                    <th>Photo</th>
+                    <th>Item</th>
+                    <th>Description</th>
+                    <th>Allergies</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+                {% for item in productlist %}
+                <tr>
+                    <td>
+                        {% if item.image_url %}
+                            <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/80" alt="No image">
+                        {% endif %}
+                    </td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.desc }}</td>
+                    <td>{{ item.allergy }}</td>
+                    <td>₱{{ item.price }}</td>
+                    <td>
+                        <input type="number"
+                               name="quantity_{{ item.id }}"
+                               min="0"
+                               max="{{ product_limits|get_item:item.id }}"
+                               value="0"
+                               {% if product_limits|get_item:item.id == 0 %} disabled {% endif %}>
+                        <div class="remaining-note">
+                            Remaining for this day: {{ product_limits|get_item:item.id }}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="submit" class="submit-button">Checkout</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+{% load static %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-image: url("https://freight.cargo.site/w/1500/h/538/q/75/i/Z1479565146878966032609515755781/JSEC-12.png");
+        background-size: cover;
+        background-position: center;
+        font-family: Arial, sans-serif;
+    }
+
+    .top-right-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 8px 16px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-weight: bold;
+    }
+
+    .top-right-container a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .top-right-container a:hover {
+        transform: translateY(-3px);
+    }
+
+    .checkout-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 50px 20px;
+        min-height: 100vh;
+    }
+
+    .checkout-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 100%;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+
+    .checkout-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    table th, table td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+    }
+
+    tfoot td {
+        text-align: right;
+        font-weight: bold;
+    }
+
+    .submit-container {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .submit-button {
+        font-family: 'Inter', sans-serif;
+        padding: 10px 25px;
+        background-color: #333;
+        color: white;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .submit-button:hover {
+        background-color: #4CAF50;
+        transform: translateY(-3px);
+    }
+
+    input[type="text"],
+    input[type="time"] {
+        width: 50%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+</style>
+
+<div class="top-right-container">
+    {% if resto %}
+        <a href="{% url 'resto_detail' resto.id %}">Return to Menu</a>
+    {% else %}
+        <a href="{% url 'home' %}">Return to Home</a>
+    {% endif %}
+</div>
+
+<div class="checkout-wrapper">
+    <div class="checkout-container">
+        <h2 class="checkout-title">Checkout</h2>
+
+        <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="pickup_date" value="{{ pickup_date }}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price (PHP)</th>
+                        <th>Quantity</th>
+                        <th>Total (PHP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.product.price }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.totalprice }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3">Grand Total:</td>
+                        <td>PHP {{ grand_total }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <input type="hidden" name="grand_total" value="{{ grand_total }}">
+
+            <hr>
+            <div style="margin-bottom: 20px;">
+            <label><strong>Select Payment Method:</strong></label><br>
+            <input type="radio" name="payment_method" value="cash" id="cash" checked>
+            <label for="cash">Cash</label>
+            <input type="radio" name="payment_method" value="online" id="online">
+            <label for="online">GCash</label>
+            </div>
+
+            <div id="online-payment-section" style="display: none; margin-top: 0; padding-top: 0;">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <!-- Left Column: Ref No and Pickup -->
+                    <div style="flex: 1;">
+                        <div style="margin-bottom: 15px;">
+                            <label for="transaction_ref" style="font-weight: bold; display: block; margin-bottom: 5px;">Enter GCash Reference Number:</label>
+                            <input type="text" name="transaction_ref" id="transaction_ref" placeholder="e.g., 123456789" style="width: 100%; padding: 8px;">
+                        </div>
+
+                        <div>
+                            <label for="pickup_time" style="font-weight: bold; display: block; margin-bottom: 5px;">Pickup Time (HH:MM AM/PM):</label>
+                            <input type="time" id="pickup_time" name="pickup_time" style="width: 100%; padding: 8px;">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: QR Code -->
+                    <div style="flex: 1; text-align: center; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center;">
+    <p style="margin: 0 0 10px 0; padding: 0;"><strong>Scan the QR code to pay:</strong></p>
+    <img src="{% static 'images/qr_code.png' %}" alt="QR Code" style="width: 250px; height: 250px; border-radius: 10px;">
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="cash-pickup-section" style="margin-top: 15px;">
+                {% if pickup_date %}
+                    <p><strong>Pickup Date:</strong> {{ pickup_date|date:"F j, Y" }}</p>
+                    <input type="hidden" name="pickup_date_cash" value="{{ pickup_date }}">
+                {% endif %}
+            </div>
+
+            <div class="submit-container">
+                <button type="submit" class="submit-button">Complete Purchase</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const onlineRadio = document.getElementById('online');
+    const cashRadio = document.getElementById('cash');
+    const onlineSection = document.getElementById('online-payment-section');
+    const cashPickup = document.getElementById('cash-pickup-section');
+
+    function toggleFields() {
+        const isOnline = onlineRadio.checked;
+        onlineSection.style.display = isOnline ? 'block' : 'none';
+        cashPickup.style.display = isOnline ? 'none' : 'block';
+    }
+
+    window.onload = () => {
+        toggleFields();
+        onlineRadio.addEventListener('change', toggleFields);
+        cashRadio.addEventListener('change', toggleFields);
+    };
+</script>
+{% endblock %}

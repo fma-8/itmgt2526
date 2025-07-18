@@ -1,0 +1,122 @@
+{% load static %}
+
+<html>
+<head>
+    <title>Transaction Confirmation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://freight.cargo.site/w/1500/h/538/q/75/i/Z1479565146878966032609515755781/JSEC-12.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .confirmation-container {
+            background: white;
+            max-width: 800px;
+            width: 100%;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .top-right-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-decoration: none;
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .top-right-button:hover {
+            background-color: #FFB347;
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .info-block {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="confirmation-container">
+        <a href="{% url 'resto1' %}" class="top-right-button">Back to Menu</a>
+
+        <h1>Thank you for your order!</h1>
+        <p><i>Please don't forget to visit our stall at your pickup time and/or date to get your order.</i></p>
+
+        <div class="info-block">
+            <strong>Transaction Date:</strong> {{ transaction.created_at|date:"F j, Y, g:i a" }}<br>
+            <strong>Pickup Date:</strong> {{ transaction.pickup_date|date:"F j, Y" }}<br>
+            {% if transaction.pickup_time %}
+                <strong>Pickup Time:</strong> {{ transaction.pickup_time|time:"H:i" }}<br>
+            {% endif %}
+            <strong>Payment Method:</strong> {{ transaction.payment_method|capfirst }}<br>
+            {% if transaction.transaction_ref %}
+                <strong>GCash Reference:</strong> {{ transaction.transaction_ref }}<br>
+            {% endif %}
+        </div>
+
+        <h2>Order Summary</h2>
+        <table>
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₱{{ item.product.price|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="total">
+            Grand Total: ₱{{ grand_total|floatformat:2 }}
+        </div>
+    </div>
+
+</body>
+</html>
